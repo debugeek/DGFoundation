@@ -40,8 +40,12 @@ open class DGTimer: NSObject {
         super.init()
         
         timer.setEventHandler { [weak self] in
-            if let self = self {
-                self.block?(self)
+            guard let self = self else { return }
+
+            self.block?(self)
+
+            if !self.repeats {
+                self.timer.cancel()
             }
         }
 
@@ -87,10 +91,11 @@ open class DGTimer: NSObject {
     
     @objc(rescheduleRepeatingInterval:)
     public func reschedule(repeatingInterval interval: Double) {
-        guard repeats else {
-            return
+        if repeats {
+            timer.schedule(deadline: .now() + interval, repeating: interval)
+        } else {
+            timer.schedule(deadline: .now() + interval)
         }
-        timer.schedule(deadline: .now() + interval, repeating: interval)
     }
     
     @objc(rescheduleBlock:)
