@@ -89,8 +89,8 @@ open class DGTimer: NSObject {
         state = .invalidated
     }
     
-    @objc(rescheduleRepeatingInterval:)
-    public func reschedule(repeatingInterval interval: Double) {
+    @objc(rescheduleTimeInterval:)
+    public func reschedule(timeInterval interval: Double) {
         if repeats {
             timer.schedule(deadline: .now() + interval, repeating: interval)
         } else {
