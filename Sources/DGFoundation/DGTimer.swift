@@ -25,35 +25,22 @@ open class DGTimer: NSObject {
     }
     private var state: State = .suspended
     
-    @objc public class func scheduledTimer(timeInterval interval: Double, repeats: Bool, queue: DispatchQueue, block: @escaping ((DGTimer) -> (Void))) -> DGTimer {
+    @objc public class func scheduledTimer(timeInterval interval: Double, repeats: Bool = false, queue: DispatchQueue = .main, block: @escaping ((DGTimer) -> (Void))) -> DGTimer {
         let timer = DGTimer(timeInterval: interval, repeats: repeats, queue: queue, block: block)
         timer.ref = timer
         timer.resume()
         return timer
     }
     
-    public init(timeInterval interval: Double, repeats: Bool, leeway: DispatchTimeInterval = .nanoseconds(0), queue: DispatchQueue = .main, block: @escaping ((DGTimer) -> (Void))) {
+    public init(timeInterval interval: Double, repeats: Bool = false, queue: DispatchQueue = .main, block: @escaping ((DGTimer) -> (Void))) {
         self.block = block
         self.repeats = repeats
         self.timer = DispatchSource.makeTimerSource(queue: queue)
         
         super.init()
         
-        timer.setEventHandler { [weak self] in
-            guard let self = self else { return }
-
-            self.block?(self)
-
-            if !self.repeats {
-                self.timer.cancel()
-            }
-        }
-
-        if repeats {
-            timer.schedule(deadline: .now() + interval, repeating: interval, leeway: leeway)
-        } else {
-            timer.schedule(deadline: .now() + interval, leeway: leeway)
-        }
+        reschedule(block: block)
+        reschedule(timeInterval: interval)
     }
     
     deinit {
@@ -102,11 +89,14 @@ open class DGTimer: NSObject {
     public func reschedule(block: @escaping ((DGTimer) -> (Void))) {
         self.block = block
         timer.setEventHandler { [weak self] in
-            if let self = self {
-                self.block?(self)
+            guard let self = self else { return }
+
+            self.block?(self)
+
+            if !self.repeats {
+                self.invalidate()
             }
         }
-
     }
     
 }
