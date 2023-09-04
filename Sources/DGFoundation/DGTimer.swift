@@ -12,6 +12,8 @@ open class DGTimer: NSObject {
 
     private let timer: DispatchSourceTimer
     
+    private(set) var deadline: DispatchTime?
+    
     private var block: ((DGTimer) -> (Void))?
     
     private var repeats: Bool = false
@@ -78,16 +80,20 @@ open class DGTimer: NSObject {
     
     @objc(rescheduleTimeInterval:)
     public func reschedule(timeInterval interval: Double) {
+        let deadline = DispatchTime.now() + interval
+        self.deadline = deadline
+        
         if repeats {
-            timer.schedule(deadline: .now() + interval, repeating: interval)
+            timer.schedule(deadline: deadline, repeating: interval)
         } else {
-            timer.schedule(deadline: .now() + interval)
+            timer.schedule(deadline: deadline)
         }
     }
     
     @objc(rescheduleBlock:)
     public func reschedule(block: @escaping ((DGTimer) -> (Void))) {
         self.block = block
+        
         timer.setEventHandler { [weak self] in
             guard let self = self else { return }
 
