@@ -12,7 +12,7 @@ open class DGTimer: NSObject {
 
     private let timer: DispatchSourceTimer
     
-    private(set) var deadline: DispatchTime?
+    public private(set) var deadline: DispatchTime?
     
     private var block: ((DGTimer) -> (Void))?
     
