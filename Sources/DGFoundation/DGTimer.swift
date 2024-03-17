@@ -27,6 +27,7 @@ open class DGTimer: NSObject {
     }
     private var state: State = .suspended
     
+    @discardableResult
     @objc public class func scheduledTimer(timeInterval interval: Double, repeats: Bool = false, queue: DispatchQueue = .main, block: @escaping ((DGTimer) -> (Void))) -> DGTimer {
         let timer = DGTimer(timeInterval: interval, repeats: repeats, queue: queue, block: block)
         timer.ref = timer
